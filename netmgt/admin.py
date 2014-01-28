@@ -8,22 +8,22 @@ class RouterPortInline(admin.StackedInline):
     model = RouterPort
 
 class RouterAdmin(admin.ModelAdmin):
-    list_display = ("hostname", "ip_address")
+    list_display = ("hostname", "ipv4_address")
     
     inlines = [
         RouterPortInline,
     ]
 
 class SwitchAdmin(admin.ModelAdmin):
-    list_display = ("hostname", "ip_address")
+    list_display = ("hostname", "ipv4_address")
     
     inlines = [
         SwitchPortInline,
     ]
 
 class NetworkAdmin(admin.ModelAdmin):
-    list_display = ("netid", "address", "mask", "description", "configured")
-    list_filter = ("configured", "mask")
+    list_display = ("netid", "ipv4_address", "ipv4_mask", "ipv6_address", "ipv6_mask", "description", "configured")
+    list_filter = ("configured", "ipv4_mask")
     
     inlines = [
         SwitchPortInline,

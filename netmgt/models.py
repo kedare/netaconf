@@ -1,6 +1,6 @@
 from django.db import models
 from django.forms import PasswordInput
-from ipaddress import IPv4Network
+from ipaddress import IPv4Network, IPv6Network
 
 class SwitchPort(models.Model):
     interface = models.CharField(blank=False, null=False, max_length=64)
@@ -14,7 +14,7 @@ class SwitchPort(models.Model):
 class Switch(models.Model):
     hostname = models.CharField(blank=False, null=False, unique=True, max_length=64)
     uplink_router_interface = models.ForeignKey("RouterPort", blank=True, null=True)
-    ip_address = models.IPAddressField(blank=False, null=False, unique=True)
+    ipv4_address = models.IPAddressField(blank=False, null=False, unique=True)
     ssh_username = models.CharField(max_length=64)
     ssh_password = models.CharField(max_length=64)
     
@@ -23,7 +23,7 @@ class Switch(models.Model):
 
 class Router(models.Model):
     hostname = models.CharField(blank=False, null=False, unique=True, max_length=64)
-    ip_address = models.IPAddressField(blank=False, null=False, unique=True)
+    ipv4_address = models.IPAddressField(blank=False, null=False, unique=True)
     ssh_username = models.CharField(max_length=64)
     ssh_password = models.CharField(max_length=64)
 
@@ -47,17 +47,29 @@ class RouterPort(models.Model):
 
 class Network(models.Model):
     description = models.CharField(blank=True, null=True, unique=True, max_length=255)
-    address = models.IPAddressField(blank=False, null=False, unique=True)
-    mask = models.IntegerField(blank=False, null=False)
+    ipv4_address = models.GenericIPAddressField(blank=False, null=False, unique=True, protocol="IPv4")
+    ipv4_mask = models.IntegerField(blank=False, null=False)
+    ipv6_address = models.GenericIPAddressField(blank=False, null=False, unique=True, protocol="IPv6")
+    ipv6_mask = models.IntegerField(blank=False, null=False)
     netid = models.IntegerField(blank=False, null=False, unique=True)
     configured = models.BooleanField(default=False)
     
     @property
-    def netmask(self):
-        return str(IPv4Network(unicode("{address}/{mask}".format(address=self.address, mask=self.mask))).netmask)
+    def netmask4(self):
+        return str(IPv4Network(unicode("{address}/{mask}".format(address=self.ipv4_address, mask=self.ipv4_mask))).netmask)
+    
     @property
-    def object(self):
-        return IPv4Network(unicode("{address}/{mask}".format(address=self.address, mask=self.mask)))
+    def object4(self):
+        return IPv4Network(unicode("{address}/{mask}".format(address=self.ipv4_address, mask=self.ipv4_mask)))
+        
+    @property
+    def netmask6(self):
+        return str(IPv6Network(unicode("{address}/{mask}".format(address=self.ipv6_address, mask=self.ipv6_mask))).netmask)
+    
+    @property
+    def object6(self):
+        return IPv6Network(unicode("{address}/{mask}".format(address=self.ipv6_address, mask=self.ipv6_mask)))
     
     def __unicode__(self):
-        return "({netid}) {address}/{mask} ({description})".format(netid=self.netid, address=self.address, mask=self.mask, description=self.description)
+        return "({netid}) {address4}/{mask4} {address6}/{mask6} ({description})".format(netid=self.netid, address4=self.ipv4_address, mask4=self.ipv4_mask, address6=self.ipv6_address, mask6=self.ipv6_mask, description=self.description)
+        
