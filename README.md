@@ -1,9 +1,11 @@
 NETACONF
 ============
 
+Does not work on Python 3.3, developped under Python 2.7 and Django 1.6
+
 This Django project allows you  to configure a network on a router and a switch connected to it.
 It connect via SSH to the devices.
-All the configuration is done by configuring objects in the Django admin area (by default http://localhost/admin)
+All the configuration is done by configuring objects in the Django admin area (by default http://localhost/admin )
 
 First you must configure the database informations in settings.py,
 then launch :
@@ -42,6 +44,8 @@ Start the server with :
 And connects to the admin area with the user you created during syncdb.
 
 Example of required configuration on the devices :
+--------------
+
 
 Router :
 
@@ -55,6 +59,7 @@ Router :
 	ip route 0.0.0.0 0.0.0.0 172.30.254.254
 
 Switch :
+Uplink must tag all vlans.
 
 	interface GigabitEthernet0/1
 		switchport mode trunk
