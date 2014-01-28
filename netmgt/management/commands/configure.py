@@ -7,13 +7,12 @@ from Exscript.protocols.drivers import ios
 import Exscript.protocols.Exception
 
 class Command(BaseCommand):
-
+    
     def handle(self, *args, **options):
         networks = Network.objects.filter(configured=False)
-        #self.stdout.write("{count} network(s) to configure".format(count=len(networks)))
         for network in networks:
             for switchport in network.switchport_set.all():
-                self.stdout.write("CONFIGURATION OF NETWORK : {network}".format(network=network))
+                self.stdout.write(">> CONFIGURATION OF NETWORK : {network}".format(network=network))
                 
                 # Switch configuration
                 self.stdout.write("Connecting to switch...")
@@ -37,11 +36,6 @@ class Command(BaseCommand):
                 conn.execute("end")
                 
                 uplink = switchport.switch.switchport_set.filter(is_uplink=True).first()
-                #self.stdout.write("Configuring uplink {switchport} on {switch}".format(switchport=uplink.interface, switch=switchport.switch))
-                #conn.execute("configure terminal")
-                #conn.execute("interface {iface}".format(iface=uplink.interface))
-                #conn.execute("switchport trunk vlan allowed add {netid}".format(netid=network.netid))
-                #conn.execute("end")
                 try:
                     conn.execute("exit")
                     conn.close()
