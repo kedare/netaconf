@@ -43,6 +43,12 @@ Start the server with :
 
 And connects to the admin area with the user you created during syncdb.
 
+Do all the configuration you need (At least, 1 switch, 1 router, 1 uplink, 1 switch interface as uplink, 1 switch interface as access, 1 network)
+
+Then to push to the devices :
+
+	python manage.py configure
+
 Example of required configuration on the devices :
 --------------
 
