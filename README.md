@@ -47,7 +47,7 @@ Do all the configuration you need (At least, 1 switch, 1 router, 1 uplink, 1 swi
 
 Then to push to the devices :
 
-	python manage.py configure
+	python manage.py push-config
 
 Example of required configuration on the devices :
 --------------

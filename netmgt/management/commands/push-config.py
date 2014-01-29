@@ -7,6 +7,7 @@ from Exscript.protocols.drivers import ios
 import Exscript.protocols.Exception
 
 class Command(BaseCommand):
+    help = "Push the configuration to network devices"
     
     def handle(self, *args, **options):
         networks = Network.objects.filter(configured=False)
@@ -93,5 +94,6 @@ class Command(BaseCommand):
                         self.stdout.write("Router configuration complete")
                     except Exscript.protocols.Exception.TimeoutException:
                         self.stdout.write("Connection failed")
+                        time.sleep(3)
                     
                 self.stdout.write("")
