@@ -5,6 +5,7 @@ from Exscript import Account
 from Exscript.protocols import SSH2
 from Exscript.protocols.drivers import ios
 import Exscript.protocols.Exception
+import time
 
 class Command(BaseCommand):
     help = "Push the configuration to network devices"
