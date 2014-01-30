@@ -1,40 +1,51 @@
 from django.contrib import admin
 from netmgt.models import *
 
+
 class SwitchPortInline(admin.StackedInline):
     model = SwitchPort
+
 
 class RouterPortInline(admin.StackedInline):
     model = RouterPort
 
+
 class RouterAdmin(admin.ModelAdmin):
     list_display = ("hostname", "ipv4_address")
-    
+    search_fields = ("hostname", "ipv4_address")
+
     inlines = [
         RouterPortInline,
     ]
 
+
 class SwitchAdmin(admin.ModelAdmin):
     list_display = ("hostname", "ipv4_address")
-    
+    search_fields = ("hostname", "ipv4_address")
+
     inlines = [
         SwitchPortInline,
     ]
+
 
 def set_to_configure(model_admin, request, queryset):
     queryset.update(configured=False)
 
+
 class NetworkAdmin(admin.ModelAdmin):
-    list_display = ("netid", "ipv4_address", "ipv4_mask", "ipv6_address", "ipv6_mask", "description", "configured")
+    list_display = ("netid", "ipv4_address", "ipv4_mask",
+                    "ipv6_address", "ipv6_mask", "description", "configured")
     list_filter = ("configured", "ipv4_mask")
-    
+    search_fields = ("ipv4_address", "ipv6_address", "description")
+
     inlines = [
         SwitchPortInline,
     ]
-    
+
     actions = [
         set_to_configure
     ]
+
 
 class SwitchPortAdmin(admin.ModelAdmin):
     list_display = ("interface", "switch", "is_uplink")
