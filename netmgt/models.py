@@ -53,22 +53,23 @@ class Network(models.Model):
     ipv6_mask = models.IntegerField(blank=False, null=False)
     netid = models.IntegerField(blank=False, null=False, unique=True)
     configured = models.BooleanField(default=False)
-    
-    @property
-    def netmask4(self):
-        return str(IPv4Network(unicode("{address}/{mask}".format(address=self.ipv4_address, mask=self.ipv4_mask))).netmask)
+
     
     @property
     def object4(self):
         return IPv4Network(unicode("{address}/{mask}".format(address=self.ipv4_address, mask=self.ipv4_mask)))
-        
+    
     @property
-    def netmask6(self):
-        return str(IPv6Network(unicode("{address}/{mask}".format(address=self.ipv6_address, mask=self.ipv6_mask))).netmask)
+    def netmask4(self):
+        return str(self.object4.netmask)
     
     @property
     def object6(self):
         return IPv6Network(unicode("{address}/{mask}".format(address=self.ipv6_address, mask=self.ipv6_mask)))
+    
+    @property
+    def netmask6(self):
+        return str(self.object6.netmask)
     
     def __unicode__(self):
         return "({netid}) {address4}/{mask4} {address6}/{mask6} ({description})".format(netid=self.netid, address4=self.ipv4_address, mask4=self.ipv4_mask, address6=self.ipv6_address, mask6=self.ipv6_mask, description=self.description)
