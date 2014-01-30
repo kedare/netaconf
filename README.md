@@ -3,6 +3,13 @@ NETACONF
 
 Does not work on Python 3.3, developped under Python 2.7 and Django 1.6
 
+Requires modules :
+
+* Django 1.6
+* termcolor
+* Exscript
+* ipaddress
+
 This Django project allows you  to configure a network on a router and a switch connected to it.
 It connect via SSH to the devices.
 All the configuration is done by configuring objects in the Django admin area (by default http://localhost/admin )
