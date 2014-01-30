@@ -6,7 +6,7 @@ from ipaddress import IPv4Network, IPv6Network
 class SwitchPort(models.Model):
     interface = models.CharField(blank=False, null=False, max_length=64)
     switch = models.ForeignKey("Switch")
-    network = models.ForeignKey("Network", blank=True, null=True)
+    network = models.ForeignKey("Network", blank=True, null=True, on_delete=models.SET_NULL)
     is_uplink = models.BooleanField(default=False)
 
     def __unicode__(self):
