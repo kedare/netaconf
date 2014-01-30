@@ -4,6 +4,7 @@ from ipaddress import *
 from Exscript import Account
 from Exscript.protocols import SSH2
 from Exscript.protocols.drivers import ios
+from termcolor import colored
 import Exscript.protocols.Exception
 import time
 
@@ -14,18 +15,18 @@ class Command(BaseCommand):
         networks = Network.objects.filter(configured=False)
         for network in networks:
             for switchport in network.switchport_set.all():
-                self.stdout.write(">> CONFIGURATION OF NETWORK : {network}".format(network=network))
+                self.stdout.write(colored(">> Configuration of : {network}".format(network=network), "white"))
                 
                 # Switch configuration
-                self.stdout.write("Connecting to switch...")
+                self.stdout.write("[{switch}] Connecting...".format(switch=switchport.switch.hostname))
                 acc = Account(switchport.switch.ssh_username, switchport.switch.ssh_password)
                 conn = SSH2()
                 conn.set_timeout(3)
                 conn.set_driver("ios")
                 conn.connect(switchport.switch.ipv4_address)
                 conn.login(acc)
-                self.stdout.write("Connected to {switch}".format(switch=switchport.switch.hostname))
-                self.stdout.write("Configuring access {switchport} on {switch}".format(switchport=switchport, switch=switchport.switch))
+                self.stdout.write(colored("[{switch}] Connected".format(switch=switchport.switch.hostname), "green"))
+                self.stdout.write("[{switch}] Configuring {switchport} as access port".format(switchport=switchport, switch=switchport.switch))
                 conn.execute("enable")
                 conn.execute("configure terminal")
                 conn.execute("vlan {netid}".format(netid=network.netid))
@@ -47,27 +48,30 @@ class Command(BaseCommand):
                     pass
                 
                 del conn
-                self.stdout.write("Switch configuration complete")
+                self.stdout.write(colored("[{switch}] Configuration complete for {switchport}".format(switch=switchport.switch.hostname, switchport=switchport), "green"))
                 
                 # Router configuration
                 router_success = False
                 while not router_success:
                     try:
-                        self.stdout.write("Connecting to router...")
                         routerport = uplink.uplink_set.first().routerport
                         router = routerport.router
+                        self.stdout.write("[{router}] Connecting".format(router=router.hostname))
                         acc = Account(router.ssh_username, router.ssh_password)
                         conn = SSH2()
                         conn.set_timeout(3)
                         conn.set_driver("ios")
                         conn.connect(router.ipv4_address)
                         conn.login(acc)
-                        print("Connected to {router}".format(router=router.hostname))
+                        iface = "{routerport}.{netid}".format(routerport=routerport.interface, netid=network.netid)
+                        self.stdout.write(colored("[{router}] Connected".format(router=router.hostname), "green"))
+                        self.stdout.write("[{router}] Defaulting interface {iface}".format(router=router.hostname, iface=iface))
                         conn.execute("enable")
                         conn.execute("configure terminal")
-                        conn.execute("interface {routerport}.{netid}".format(routerport=routerport.interface, netid=network.netid))
-                        conn.execute("no interface {routerport}.{netid}".format(routerport=routerport.interface, netid=network.netid))
-                        conn.execute("interface {routerport}.{netid}".format(routerport=routerport.interface, netid=network.netid))
+                        conn.execute("interface {iface}".format(iface=iface))
+                        conn.execute("no interface {iface}".format(iface=iface))
+                        self.stdout.write("[{router}] Configuring interface {iface}".format(router=router.hostname, iface=iface))
+                        conn.execute("interface {iface}".format(iface=iface))
                         conn.execute("encapsulation dot1Q {netid}".format(netid=network.netid))
                         conn.execute("ip address {address4} {netmask4}".format(address4=str(network.object4.hosts().next()), netmask4=network.netmask4))
                         conn.execute("ipv6 enable")
@@ -76,6 +80,7 @@ class Command(BaseCommand):
                         conn.execute("no shutdown")
                         conn.execute("ip nat inside")
                         conn.execute("end")
+                        self.stdout.write("[{router}] Configuring DHCPv4 Pool".format(router=router.hostname))
                         conn.execute("configure terminal")  
                         conn.execute("ip dhcp pool DHCP-{netid}".format(netid=network.netid))
                         conn.execute("network {address4} {netmask4}".format(address4=network.ipv4_address, netmask4=network.netmask4))
@@ -92,9 +97,9 @@ class Command(BaseCommand):
                             pass
                     
                         del conn
-                        self.stdout.write("Router configuration complete")
+                        self.stdout.write(colored("[{router}] Configuration complete for VLAN {netid}".format(router=router.hostname, netid=network.netid), "green"))
                     except Exscript.protocols.Exception.TimeoutException:
-                        self.stdout.write("Connection failed")
+                        self.stdout.write(colored("[{router}] Connection failed".format(router=router.hostname), "red"))
                         time.sleep(3)
                     
                 self.stdout.write("")

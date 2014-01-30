@@ -21,12 +21,19 @@ class SwitchAdmin(admin.ModelAdmin):
         SwitchPortInline,
     ]
 
+def set_to_configure(model_admin, request, queryset):
+    queryset.update(configured=False)
+
 class NetworkAdmin(admin.ModelAdmin):
     list_display = ("netid", "ipv4_address", "ipv4_mask", "ipv6_address", "ipv6_mask", "description", "configured")
     list_filter = ("configured", "ipv4_mask")
     
     inlines = [
         SwitchPortInline,
+    ]
+    
+    actions = [
+        set_to_configure
     ]
 
 class SwitchPortAdmin(admin.ModelAdmin):
